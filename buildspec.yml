@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run lint
+      - npm run build
+  post_build:
+    commands:
+      - test $CODEBUILD_BUILD_SUCCEEDING -eq 0 || aws s3 sync --delete --acl public-read dist/ s3://superowned/superown
+      - test $CODEBUILD_BUILD_SUCCEEDING -eq 0 || aws cloudfront create-invalidation --distribution-id E1P5S6LO2WB92 --paths '/*'
+
+artifacts:
+  files:
+    - index.html
+    - dist/*
+
+cache:
+  paths:
+    - 'node_modules/**/*'
